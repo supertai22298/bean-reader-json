@@ -4,9 +4,11 @@ import { Button } from "./ui/button";
 import { SOURCE, URL } from "@/constants/source";
 import { Chapter, ChapterList } from "@/types/chapter";
 import { useGetChapterParams } from "@/hooks/use-chapter-param";
+import { LoaderCircleIcon } from "lucide-react";
 
 const ReadView: React.FC = () => {
   const [chapter, setChapter] = useState<Chapter>();
+  const [loading, setLoading] = useState(false);
   const chapterParams = useGetChapterParams();
   const [currentChapterSlug, setCurrentChapterSlug] = useLocalStorage<string>(
     SOURCE.CURRENT_CHAPTER_SLUG,
@@ -32,6 +34,7 @@ const ReadView: React.FC = () => {
   useEffect(() => {
     const fetchChapter = async () => {
       try {
+        setLoading(true);
         const response = await fetch(URL.CHAPTERS(currentChapterSlug));
         if (response.status === 200) {
           const data = await response.json();
@@ -39,6 +42,8 @@ const ReadView: React.FC = () => {
         }
       } catch (error) {
         console.error("Error fetching chapters:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -72,6 +77,14 @@ const ReadView: React.FC = () => {
       </Button>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <LoaderCircleIcon className="animate-spin text-blue-500" />
+      </div>
+    );
+  }
   return (
     <>
       {chapter && (
