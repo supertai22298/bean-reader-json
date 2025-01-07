@@ -127,7 +127,7 @@ async function crawlChapterContent() {
         );
 
         // Random delay between requests (1-3 seconds)
-        await new Promise((r) => setTimeout(r, 1000 + Math.random() * 2000));
+        await new Promise((r) => setTimeout(r, 0));
       } catch (error) {
         console.error(`Error crawling chapter ${chapter.slug}:`, error);
       }
@@ -139,8 +139,50 @@ async function crawlChapterContent() {
   }
 }
 
+
+async function createDefaultContentForMissingChapters() {
+  try {
+    // Read chapter list
+    const chapterList = JSON.parse(
+      await fs.readFile("public/nga-duc-phong-thien/chapter-list.json", "utf-8")
+    );
+    const errChapters = []
+    for (const chapter of chapterList) {
+      const filePath = `public/nga-duc-phong-thien/chapters/${chapter.slug}.json`;
+
+      try {
+        await fs.access(filePath);
+      } catch (err) {
+        // File doesn't exist, create default content
+        
+        errChapters.push(chapter.slug)
+        
+        const defaultContent = {
+          ...chapter,
+          contentHTML: "Chapter lỗi, vui lòng thử lại sau",
+        };
+
+        await fs.writeFile(
+          filePath,
+          JSON.stringify(defaultContent, null, 2),
+          "utf-8"
+        );
+
+        console.log(`Created default content for missing chapter: ${chapter.slug}`);
+      }
+    }
+    
+    console.log('errChapters', errChapters)
+  } catch (error) {
+    console.error("Error in createDefaultContentForMissingChapters:", error);
+  }
+}
+
 // Step1 crawl all chapters
 // crawlChapters();
 
 // Step 2: crawl content of each chapter
-crawlChapterContent();
+// crawlChapterContent();
+
+// Step 3: Find the chapter that has no exits in folder, create a default content: "Chapter lỗi, vui lòng thử lại sau"
+createDefaultContentForMissingChapters()

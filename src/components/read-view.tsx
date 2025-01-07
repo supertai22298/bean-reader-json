@@ -2,15 +2,32 @@ import React, { useEffect, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { Button } from "./ui/button";
 import { SOURCE, URL } from "@/constants/source";
-import { Chapter } from "@/types/chapter";
+import { Chapter, ChapterList } from "@/types/chapter";
+import { useGetChapterParams } from "@/hooks/use-chapter-param";
 
 const ReadView: React.FC = () => {
   const [chapter, setChapter] = useState<Chapter>();
-
+  const chapterParams = useGetChapterParams();
   const [currentChapterSlug, setCurrentChapterSlug] = useLocalStorage<string>(
     SOURCE.CURRENT_CHAPTER_SLUG,
-    "chuong-1"
+    chapterParams
   );
+  const [localChapters] = useLocalStorage<ChapterList>(
+    SOURCE.LOCAL_CHAPTERS,
+    []
+  );
+
+  const previousChapterSlug = chapter?.chapterNumber
+    ? localChapters.find(
+        (c) => c.slug === `chuong-${parseInt(chapter.chapterNumber) - 1}`
+      )?.slug
+    : null;
+
+  const nextChapterSlug = chapter?.chapterNumber
+    ? localChapters.find(
+        (c) => c.slug === `chuong-${parseInt(chapter.chapterNumber) + 1}`
+      )?.slug
+    : null;
 
   useEffect(() => {
     const fetchChapter = async () => {
@@ -34,17 +51,22 @@ const ReadView: React.FC = () => {
       <Button
         variant="outline"
         onClick={() => {
-          setCurrentChapterSlug(chapter?.previousLink ?? "");
+          if (previousChapterSlug) {
+            setCurrentChapterSlug(previousChapterSlug);
+          }
         }}
-        disabled={!chapter?.previousLink}
+        disabled={!previousChapterSlug}
       >
         Chap trước
       </Button>
       <Button
         variant="outline"
         onClick={() => {
-          setCurrentChapterSlug(chapter?.nextLink ?? "");
+          if (nextChapterSlug) {
+            setCurrentChapterSlug(nextChapterSlug);
+          }
         }}
+        disabled={!nextChapterSlug}
       >
         Chap sau
       </Button>
@@ -55,7 +77,11 @@ const ReadView: React.FC = () => {
       {chapter && (
         <div className="space-y-4">
           {renderButton}
-          <h6>{chapter?.title}</h6>
+          <h6 className="font-bold">
+            {chapter?.title.includes("chuong")
+              ? `${chapter?.title}`
+              : `Chương ${chapter?.chapterNumber}: ${chapter?.title}`}
+          </h6>
           <div
             className="prose prose-sm max-w-none"
             dangerouslySetInnerHTML={{ __html: chapter?.contentHTML }}
