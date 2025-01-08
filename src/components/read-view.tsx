@@ -52,7 +52,7 @@ const ReadView: React.FC = () => {
   }, [currentChapterSlug]);
 
   const renderButton = (
-    <div className="flex flex-row justify-between gap-2 mt-4">
+    <div className="flex flex-row justify-between gap-2 my-4">
       <Button
         variant="outline"
         onClick={() => {

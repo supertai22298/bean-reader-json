@@ -26,7 +26,7 @@ function App() {
 
   return (
     <div className="min-h-screen max-w-full  mx-auto overflow-x-hidden bg-[#EDD1B0] px-4 font-notoSerif text-2xl leading-10">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto pb-4">
         <ChapterMenu />
         <ReadView />
       </div>
